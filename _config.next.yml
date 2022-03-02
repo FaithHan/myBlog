@@ -1,0 +1,19 @@
+#scheme: Muse
+#scheme: Mist
+#scheme: Pisces
+scheme: Gemini
+
+darkmode: true
+
+minify: true
+
+# Reading progress bar
+reading_progress:
+  enable: true
+  # Available values: left | right
+  start_at: left
+  # Available values: top | bottom
+  position: top
+  reversed: false
+  color: "#37c6c0"
+  height: 3px
