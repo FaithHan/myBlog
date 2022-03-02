@@ -89,40 +89,57 @@ $ git push
 我们需要在.github/workflows路径下新建deploy.yml文件，并Push到Repo中
 
 ```yaml
-name: CI
+name: GitHub Pages
 
 on:
   push:
-    branches: [master]
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-20.04
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 16.x
+      - name: checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache NPM dependencies
+
+      - name: Cache dependencies
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: ${{ runner.OS }}-npm-cache
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.OS }}-npm-cache
+            ${{ runner.os }}-node-
+
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
+
       - name: Build
         run: npm run build
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./public
+          publish_branch: master
+          external_repository: faithhan/faithhan.github.io
+          user_name: hanfei
+          user_email: freepuresakura@gmail.com
+          cname: hanfeii.top
 ```
 
-每次master提交后，就会自动触发流水线，生成静态文件并部署
+每次master提交后，就会自动触发流水线，生成静态文件并部署到博客Repo
 ![](使用Hexo和GitHubPages搭建博客/image-20220226215237952.png)
 
 ​	
