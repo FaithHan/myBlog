@@ -26,6 +26,8 @@ tags:
 
 # 使用Java发送邮件
 
+### 依赖
+
 需要引入的邮件发送Jar包
 
 ```xml
@@ -41,9 +43,97 @@ tags:
 如果是SpringBoot项目，我们可以直接引入
 
 ```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+  	<version>2.6.0</version>
+</dependency>
 ```
 
 
+
+### 使用Spring的JavaMailSender发送邮件
+
+我们可以直接用jakarta mail提供的原生API发送邮件，但是Spring官方所提供的JavaMailSender有更为简洁和强大的接口
+
+```java
+// 实例化并配置JavaMailSender
+JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+mailSender.setHost("mail.baidu.com");
+mailSender.setPort(25);
+mailSender.setUsername("hanfei08");
+mailSender.setPassword("******");
+
+Properties props = mailSender.getJavaMailProperties();
+props.put("mail.transport.protocol", "smtp");
+props.put("mail.smtp.auth", "true");
+props.put("mail.smtp.starttls.enable", "true");
+props.put("mail.debug", "true");
+
+/**
+* 发送邮件
+*/
+public static void sendMail(String[] to, String[] cc, String[] bcc,
+                             String subject, String content, PriorityEnum priority,
+                             Map<String, InputStream> attachmentMap, Map<String, InputStream> inlineMap,
+                             boolean isHTML) {
+    Assert.notNull(to, "to array can not be null");
+    Assert.notNull(subject, "subject can not be null");
+    Assert.notNull(content, "content can not be null");
+    try {
+        MimeMessage message = SENDER.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+        helper.setFrom(from);
+        helper.setTo(to);
+        helper.setCc(cc != null ? cc : EMPTY_ARRAY);
+        helper.setCc(bcc != null ? bcc : EMPTY_ARRAY);
+        helper.setSubject(subject);
+        helper.setText(content, isHTML);
+        helper.setSentDate(new Date());
+        helper.setEncodeFilenames(true); // 解决附件中文名称乱码
+        priority = priority != null ? priority : NORMAL; //邮件重要程度
+        switch (priority) {
+            case LOW:
+                helper.setPriority(5);
+                break;
+            case HIGH:
+                helper.setPriority(1);
+                break;
+            case NORMAL:
+            default:
+        }
+      //添加附件
+        if (Objects.nonNull(attachmentMap)) {
+            for (Map.Entry<String, InputStream> entry : attachmentMap.entrySet()) {
+                String fileName = entry.getKey();
+                InputStream inputStream = entry.getValue();
+                helper.addAttachment(fileName, new ByteArrayResource(StreamCopyUtils.copyToByteArray(inputStream)));
+            }
+        }
+      //添加资源
+        if (isHTML && Objects.nonNull(inlineMap)) {
+            for (Map.Entry<String, InputStream> entry : inlineMap.entrySet()) {
+                String cuid = entry.getKey();
+                InputStream inputStream = entry.getValue();
+                helper.addInline(cuid, new ByteArrayResource(StreamCopyUtils.copyToByteArray(inputStream)){
+                    @Override
+                    public String getFilename() {
+                        return cuid;
+                    }
+                });
+            }
+        }
+        sendMessage(message);
+    } catch (MessagingException | IOException e) {
+        log.error("send mail error", e);
+        throw new RuntimeException(e);
+    }
+}
+```
+
+# 参考
+
+[https://www.javatpoint.com/java-mail-api-tutorial](https://www.javatpoint.com/java-mail-api-tutorial) 很好的教学包括发送各种类型的邮件、接收邮件、删除邮件等操作
 
 
 
