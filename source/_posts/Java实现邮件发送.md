@@ -46,7 +46,7 @@ tags:
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-mail</artifactId>
-  	<version>2.6.0</version>
+    <version>2.6.0</version>
 </dependency>
 ```
 
