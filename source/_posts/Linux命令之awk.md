@@ -11,7 +11,7 @@ tags:
 2. 通过模式匹配每一行
 3. 如果行匹配，则执行相应的action
 
-[//]: # (![img.png]&#40;Linux命令之awk/img.png&#41;)
+![img.png](Linux命令之awk/img.png)
 **用于**
 1. 变换数据格式
 2. 生成格式化报告
