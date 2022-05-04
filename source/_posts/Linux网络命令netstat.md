@@ -10,7 +10,7 @@ tags:
 * -p - 协议过滤，如 TCP UDP
 
 ```shell
-#查询占用80短裤的进程
+#查询占用80端口的进程
 netstat -anvp TCP | egrep -w [.]80.*LISTEN
 ```
 
